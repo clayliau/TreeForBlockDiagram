@@ -1,33 +1,32 @@
 #%%
 from MultiEdgeTreeList import *
-myTree = Node(1)
-myTree.addNewChild(2)
-myTree.addNewChild(3)
-myTree.addNewChild(4)
-treePtr = myTree.children[0]
-treePtr.addNewChild(5)
-treePtr = myTree.children[1]
-treePtr.addNewChild(6)
-treePtr.addNewChild(7)
-treePtr.addNewChild(8)
-treePtr = treePtr.children[2]
-parentPtr = myTree.children[2]
-treePtr.addParent(parentPtr)
-#treePtr = myTree.children[1]
-#treePtr.insertNode(9)
-#%%
-treePtr = treePtr.parents[1]
+import os
+os.environ["PATH"] += os.pathsep + 'C:\\Program Files (x86)\\Graphviz2.38\\bin'
+myTree = BlockDiagram()
+myTree.newBlock(1)
+myTree.addNewChildNode(2)
+myTree.addNewChildNode(3)
+myTree.go2Child(0)
+myTree.addNewChildNode(4)
+myTree.addNewChildNode(5)
+myTree.go2Parent(0)
+myTree.go2Child(1)
+myTree.addNewChildNode(6)
+myTree.addNewChildNode(7)
+myTree.addNewChildNode(8)
 
 #%%
-childPtr = treePtr.children[0]
-#%%
-treePtr.addChild(childPtr)
+
+
+
 
 #%%
-for child in myTree.children[1].children[0].children:
-    print(child.value)
+targetParentPtr = myTree.rootNode.getChildrenList()[0]
+myTree.addExistedParentNode(targetParentPtr)
+#%%
+myTree.graph
 
 #%%
-myTree.children[1].children[0].children[2].parents[1].parents[0].children[1].value
+myTree.graph.view()
 
 #%%

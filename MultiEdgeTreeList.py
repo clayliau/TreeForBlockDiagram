@@ -57,15 +57,28 @@ class Node():
         return self.parents
     def getValue(self):
         return self.value
-    
+    def delNode(self):
+        if len(self.parents) < 1:
+            print('Can\'t delete a node with no parent')
+        else:
+            print('Node ID %d is deleting' %self.id)
+            for child in self.children:
+                self.parents[0].append(child)
+                print('Connect node ID %d to node ID %d' %(child.id,self.parents[0].id))
+                print('Node ID %d is node ID %d\'s new child node' %(child.id,self.parents[0].id))
+            print('Node ID %d is deleted' %self.id)
 
 class BlockDiagram():
     def __init__(self):
         self.rootNode = None
         self.currNodePtr = None
-        self.tempNodePtr = None
+        self.newNodePtr = None
+        self.parentNodePtr = None
         self.graph = None
         self.nodeIDCount = 0
+        self.nodeListPtr = list()
+    def add2NodeListPtr(self, nodePtr):
+        self.nodeListPtr.append(nodePtr)
     def newBlock(self, value):
         if self.rootNode == None:
             self.rootNode = Node(value, self.nodeIDCount)
@@ -73,76 +86,78 @@ class BlockDiagram():
             self.rootNode.setAsRoot()
             self.currNodePtr = self.rootNode
             self.parentNodePtr = self.rootNode
+            self.add2NodeListPtr(self.rootNode)
             self.graph = Graph(name='BlockDiagram', filename='BlockDiagram.gv', engine='dot')
-            self.graph.node(name = self.currNodePtr.getID(), label = self.currNodePtr.getValue())
+            self.graph.node(name = str(self.currNodePtr.getID()), label = str(self.currNodePtr.getValue()))
+            print('Graph is created. The root node ID is %d' %self.currNodePtr.getID())
+    def addGraphvizNode(self):
+        #Always Create new node from newNodePtr
+        ID = str(self.newNodePtr.getID())
+        Value = str(self.newNodePtr.getValue())
+        self.graph.node(name = ID, label = Value)
+        print('Graphviz Node is created with Node ID %s and Value %s' %(ID, Value))
+    def addGraphvizEdge(self, dir = 'new2curr'):
+        # Create connection from newNodePtr --> currNodePtr
+        if dir == 'new2curr':
+            ID1 = str(self.newNodePtr.getID())
+            ID2 = str(self.currNodePtr.getID())
+        else:
+            ID1 = str(self.currNodePtr.getID())
+            ID2 = str(self.newNodePtr.getID())
+        self.graph.edge(ID1, ID2)
+        print('Graphviz edge is created between Node ID %s and ID %s' %(ID1, ID2))
     def addNewChildNode(self, value):
-        self.nodeIDCount += 1
         self.currNodePtr.addNewChild(value, self.nodeIDCount)
-        self.tempNodePtr = self.currNodePtr.getChildrenList()[-1] # get the new children and assign to tempNodePtr
-        print('add new node with ID %d to node ID %d' %(self.nodeID, currNodePtr.getID()))
-        self.graph.node(name = self.tempNodePtr.getID(), label = self.tempNodePtr.getValue())
-        self.graph.edge(self.currNodePtr.getID(), self.tempNodePtr.getID())
-    def addNewParentNode(self, value):
+        self.newNodePtr = self.currNodePtr.getChildrenList()[-1] # get the new children and assign to newNodePtr
+        self.add2NodeListPtr(self.newNodePtr)
+        print('add new child node ID %d to node ID %d' %(self.nodeIDCount, self.currNodePtr.getID()))
+        self.addGraphvizNode()
+        self.addGraphvizEdge(dir = 'curr2new')
         self.nodeIDCount += 1
+    def addNewParentNode(self, value):
         self.currNodePtr.addNewParent(value, self.nodeIDCount)
-        self.tempNodePtr = self.currNodePtr.getParentsList()[-1] # get the new children and assign to tempNodePtr
-        print('add new node with ID %d to node ID %d' %(self.nodeID, currNodePtr.getID()))
-        self.graph.node(name = self.tempNodePtr.getID(), label = self.tempNodePtr.getValue())
-        self.graph.edge(self.tempNodePtr.getID(), self.currNodePtr.getID())
+        self.newNodePtr = self.currNodePtr.getParentsList()[-1] # get the new children and assign to tempNodePtr
+        self.add2NodeListPtr(self.newNodePtr)
+        print('add new parent node ID %d to node ID %d' %(self.nodeID, currNodePtr.getID()))
+        self.addGraphvizNode()
+        self.addGraphvizEdge(dir = 'new2curr')
+        self.nodeIDCount += 1
     def addExistedParentNode(self, NewParentPtr):
         self.currNodePtr.addExitedParent(NewParentPtr)
-        self.tempNodePtr = self.currNodePtr.getParentsList()[-1]
-        self.graph.edge(self.tempNodePtr.getID(), self.currNodePtr.getID())
+        self.newNodePtr = self.currNodePtr.getParentsList()[-1]
+        self.addGraphvizEdge(dir = 'new2curr')
     def addExistedChildNode(self, NewChildPtr):
         self.currNodePtr.addExitedChild(NewChildPtr)
-        self.tempNodePtr = self.currNodePtr.getChildrenList()[-1]
-        self.graph.edge(self.currNodePtr.getID(), self.tempNodePtr.getID())
-    '''    
-    def getChildrenPosIDValueDict(self):
-        returnDict = dict()
-        if self.currNodePtr.getChildrenList():
-            for i, child in enumerate(self.currNodePtr.getChildrenList()):
-                returnDict.get(i, [child.id,child.value])
-            return returnDict
-        else:
-            return returnDict
-    '''
-    '''        
+        self.newNodePtr = self.currNodePtr.getChildrenList()[-1]
+        self.addGraphvizEdge(dir = 'curr2new')
     def go2Child(self, childPos):
-        if self.currNodePtr.leftChild:
-            print('move node to left node')
-            self.parentNodePtr = self.currNodePtr
-            self.currNodePtr = self.currNodePtr.leftChild
-            print('from node value %d move to %d ' %(self.parentNodePtr.value, self.currNodePtr.value))
-            print('new node parent value is %d' %(self.parentNodePtr.value))
-            if not(self.currNodePtr.isRootNode) and (self.currNodePtr.parent==None):
-                self.currNodePtr.assignParent(self.parentNodePtr)
-                print('no parent in Node.parent')
-                print('current node value: %d' %self.currNodePtr.value)
-                print('parent node value: %d' %self.currNodePtr.parent.value)
+        if childPos < len(self.currNodePtr.children):
+            print('move to children No.%d' %childPos)
+            oriID = self.currNodePtr.id
+            self.currNodePtr = self.currNodePtr.children[childPos]
+            print('from node ID %d move to Node ID %d ' %(oriID, self.currNodePtr.getID()))
         else:
-            print('No left child node!')
-    def go2RootNode(self):
-        print('move node to root node')
-        oriNode = self.currNodePtr
-        self.currNodePtr = self.rootNode
-        self.parentNodePtr = self.rootNode
-        print('from node value %d move to %d ' %(oriNode.value, self.currNodePtr.value))
-    def go2ParentNode(self):
-        print('move node to parent node')
-        tempPtr = self.parentNodePtr.parent
-        oriNode = self.currNodePtr
-        self.currNodePtr = self.parentNodePtr
-        self.parentNodePtr = tempPtr
-        print('from node value %d move to %d ' %(oriNode.value, self.currNodePtr.value))
-    def bfs(self):
-        queueTree = Queue()
-        queueTree.put(self.rootNode)
-        while not queueTree.empty():
-            currentNode = queueTree.get()
-            print(currentNode.value)
-            if currentNode.leftChild:
-                queueTree.put(currentNode.leftChild)
-            if currentNode.rightChild:
-                queueTree.put(currentNode.rightChild)
-'''
+            print('No No.%d child node!' %childPos)
+    def go2Parent(self, parentPos):
+        if parentPos < len(self.currNodePtr.parents):
+            print('move to parent No.%d' %parentPos)
+            oriID = self.currNodePtr.id
+            self.currNodePtr = self.currNodePtr.parents[parentPos]
+            print('from node ID %d move to Node ID %d ' %(oriID, self.currNodePtr.getID()))
+        else:
+            print('No No.%d child node!' %parentPos)
+    def go2NodeID(self, id):
+        if id < len(self.nodeListPtr):
+            self.currNodePtr = self.nodeListPtr[id]
+            print('Move to node ID %d' %self.currNodePtr.getID())
+        else:
+            print('Out of Range! Node id is not in the list.')
+    def getNodeFromID(self, id):
+        if id < len(self.nodeListPtr):
+            return self.nodeListPtr[id]
+        else:
+            print('Out of Range! Node id is not in the list.')
+    def getCurrChildrenList(self):
+        return self.currNodePtr.getChildrenList()
+    def getCurrParentsList(self):
+        return self.currNodePtr.getParentsList()
