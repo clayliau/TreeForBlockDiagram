@@ -16,9 +16,11 @@ myTree.addNewChildNode('6')
 myTree.addNewChildNode('7')
 myTree.addNewChildNode('8')
 myTree.go2Child(1)
-myTree.addExistedParentNodeByID(1)
+parentPtr = myTree.getNodeFromID(1)
+myTree.addExistParentNode(parentPtr)
 myTree.go2NodeID(3)
-myTree.addExistedChildNodeByID(8)
+childPtr = myTree.getNodeFromID(2).children[2]
+myTree.addExistChildNode(childPtr)
 #myTree.showBlockDiagram()
 
 #%%

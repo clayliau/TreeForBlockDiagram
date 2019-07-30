@@ -83,10 +83,10 @@ class Node():
         # Reset original node's parents list and assign newNode as it's parent 
         self.parents = list()
         self.parents.append(newNode)
-    def addExitedChild(self, childNode):
+    def addExistChild(self, childNode):
         '''
         ### Function Description
-        Add an exited node to children list.
+        Add an existing node to children list.
         ### Parameters Description
          * childNode: 
           * type: object
@@ -100,10 +100,10 @@ class Node():
             print('It\'s already in the child\'s parents list')
         else:
             childNode.parents.append(self)
-    def addExitedParent(self, ParentNode):
+    def addExistParent(self, ParentNode):
         '''
         ### Function Description
-        Add an exited node to children list.
+        Add an existing node to children list.
         ### Parameters Description
          * ParentNode: 
           * type: object
@@ -236,7 +236,7 @@ class BlockDiagram():
             ID2 = str(self.currNodePtr.id)
             edge = ID1 + ' -- ' + ID2
             if edge in self.edgeList:
-                print('Edge connection is existed')
+                print('Edge connection is Exist')
             else:
                 self.edgeList.append(edge)
                 print('Graphviz edge is created between Node ID %s and ID %s' %(ID1, ID2))
@@ -246,7 +246,7 @@ class BlockDiagram():
             ID2 = str(self.newNodePtr.id)
             edge = ID1 + ' -- ' + ID2
             if edge in self.edgeList:
-                print('Edge connection is existed')
+                print('Edge connection is Exist')
             else:
                 self.edgeList.append(edge)
                 print('Graphviz edge is created between Node ID %s and ID %s' %(ID1, ID2))
@@ -269,6 +269,17 @@ class BlockDiagram():
             self.edgeList.append(newEdgeSyntax)
             print('Graphviz edge is created between Node ID %s and ID %s' %(insertID, childrenID))
     def addNewChildNode(self, value, dataObj=None):
+        '''
+        ### Function Description
+        Create new child node by using Node.addNewChild. It automacitally assign node.id by self.nodeIDCount
+        ### Parameters Description
+         * value: 
+          * type: str, int
+          * description: text for block diagram. Identifier for user to name the node 
+         * dataObj: 
+          * type: object
+          * description: store object item in node for advanced application 
+        '''
         self.currNodePtr.addNewChild(value, self.nodeIDCount, dataObj)
         self.newNodePtr = self.currNodePtr.children[-1] # get the new children and assign to newNodePtr
         self.add2NodeListPtr(self.newNodePtr)
@@ -277,6 +288,17 @@ class BlockDiagram():
         self.addGraphvizEdge(dir = 'curr2new')
         self.nodeIDCount += 1
     def addNewParentNode(self, value, dataObj=None):
+        '''
+        ### Function Description
+        Create new parent node by using Node.addNewParent. It automacitally assign node.id by self.nodeIDCount
+        ### Parameters Description
+         * value: 
+          * type: str, int
+          * description: text for block diagram. Identifier for user to name the node 
+         * dataObj: 
+          * type: object
+          * description: store object item in node for advanced application 
+        '''
         self.currNodePtr.addNewParent(value, self.nodeIDCount, dataObj)
         self.newNodePtr = self.currNodePtr.parents[-1] # get the new children and assign to tempNodePtr
         self.add2NodeListPtr(self.newNodePtr)
@@ -285,6 +307,18 @@ class BlockDiagram():
         self.addGraphvizEdge(dir = 'new2curr')
         self.nodeIDCount += 1
     def insertNewNode(self, value, dataObj=None):
+        '''
+        ### Function Description
+        Create new node and isert it between currNodePtr and it's parents by using Node.insertNode. 
+        It automacitally assign node.id by self.nodeIDCount
+        ### Parameters Description
+         * value: 
+          * type: str, int
+          * description: text for block diagram. Identifier for user to name the node 
+         * dataObj: 
+          * type: object
+          * description: store object item in node for advanced application 
+        '''
         self.currNodePtr.insertNode(value, self.nodeIDCount, dataObj)
         self.newNodePtr = self.currNodePtr.parents[-1]
         self.add2NodeListPtr(self.newNodePtr)
@@ -294,21 +328,61 @@ class BlockDiagram():
         self.addGraphvizNode()
         self.addGraphvizEdge(dir = 'insert')
         self.nodeIDCount += 1
-    def addExistedParentNode(self, NewParentPtr):
-        self.currNodePtr.addExitedParent(NewParentPtr)
+    def addExistParentNode(self, NewParentPtr):
+        '''
+        ### Function Description
+        Add existing parent node into currNodePtr parents list.
+        ### Parameters Description
+         * NewParentPtr: 
+          * type: object
+          * description: a pointer parameter of new parent node
+        '''
+        self.currNodePtr.addExistParent(NewParentPtr)
         self.newNodePtr = self.currNodePtr.parents[-1]
         self.addGraphvizEdge(dir = 'new2curr')
-    def addExistedParentNodeByID(self, id):
+    def addExistParentNodeByID(self, id):
+        '''
+        ### Function Description
+        Add existing parent node into currNodePtr parents list by using node id
+        ### Parameters Description
+         * id: 
+          * type: int
+          * description: id of target parent node. node id can be queried by Node object Node.id
+        '''
         NewParentPtr = self.getNodeFromID(id)
-        self.addExistedParentNode(NewParentPtr)
-    def addExistedChildNode(self, NewChildPtr):
-        self.currNodePtr.addExitedChild(NewChildPtr)
+        self.addExistParentNode(NewParentPtr)
+    def addExistChildNode(self, NewChildPtr):
+        '''
+        ### Function Description
+        Add existing child node into currNodePtr children list.
+        ### Parameters Description
+         * NewChildPtr: 
+          * type: object
+          * description: a pointer parameter of new child node
+        '''
+        self.currNodePtr.addExistChild(NewChildPtr)
         self.newNodePtr = self.currNodePtr.children[-1]
         self.addGraphvizEdge(dir = 'curr2new')
-    def addExistedChildNodeByID(self, id):
+    def addExistChildNodeByID(self, id):
+        '''
+        ### Function Description
+        Add existing child node into currNodePtr children list by using node id
+        ### Parameters Description
+         * id: 
+          * type: int
+          * description: id of target child node. node id can be queried by Node object Node.id
+        '''
         NewChildPtr = self.getNodeFromID(id)
-        self.addExistedChildNode(NewChildPtr)
+        self.addExistChildNode(NewChildPtr)
     def go2Child(self, childPos):
+        '''
+        ### Function Description
+        Assign currNodePtr to one of currNodePtr's child by using list index.
+        ### Parameters Description
+         * childPos: 
+          * type: int
+          * description: The index number of children list which is represesntd the target child node.
+        '''
         if childPos < len(self.currNodePtr.children):
             print('move to children No.%d' %childPos)
             oriID = self.currNodePtr.id
@@ -317,6 +391,14 @@ class BlockDiagram():
         else:
             print('No No.%d child node!' %childPos)
     def go2Parent(self, parentPos):
+        '''
+        ### Function Description
+        Assign currNodePtr to one of currNodePtr's parent by using list index.
+        ### Parameters Description
+         * childPos: 
+          * type: int
+          * description: The index number of parents list which is represesntd the target parent node.
+        '''
         if parentPos < len(self.currNodePtr.parents):
             print('move to parent No.%d' %parentPos)
             oriID = self.currNodePtr.id
@@ -325,22 +407,55 @@ class BlockDiagram():
         else:
             print('No No.%d child node!' %parentPos)
     def go2NodeID(self, id):
+        '''
+        ### Function Description
+        Assign currNodePtr to a node by using node id
+        ### Parameters Description
+         * id: 
+          * type: int
+          * description: id of target node. node id can be queried by Node object Node.id
+        '''
         if id < len(self.nodeListPtr):
             self.currNodePtr = self.nodeListPtr[id]
             print('Move to node ID %d' %self.currNodePtr.id)
         else:
             print('Out of Range! Node id is not in the list.')
     def getNodeFromID(self, id):
+        '''
+        ### Function Description
+        Get target Node object by using node id.
+        ### Parameters Description
+         * id: 
+          * type: int
+          * description: id of target node. node id can be queried by Node object Node.id
+        ### Return Value
+         * Target node object
+        '''
         if id < len(self.nodeListPtr):
             return self.nodeListPtr[id]
         else:
             print('Out of Range! Node id is not in the list.')
     def getCurrChildrenList(self):
+        '''
+        ### Function Description
+        Get currNodePtr's children List
+        ### Return Value
+         * currNodePtr's children List
+        '''
         return self.currNodePtr.children
     def getCurrParentsList(self):
+        '''
+        ### Function Description
+        Get currNodePtr's parents List
+        ### Return Value
+         * currNodePtr's parents List
+        '''
         return self.currNodePtr.parents
-    def showBlockDiagram(self, method = 'pdf'):
-        #self.graph.edges(self.edgeList)
+    def showBlockDiagram(self):
+        '''
+        ### Function Description
+        Reder Graphviz source and show the block diagram with PDF file.
+        '''
         self.graphvizSource = self.graph.source
         edges = '\t' +'\n\t'.join(self.edgeList) + '\n}'
         print(edges)
@@ -348,24 +463,23 @@ class BlockDiagram():
         print(self.graphvizSource)
         renderGraph = Source(self.graphvizSource, filename='BlockDiagram.gv', engine='dot')
         renderGraph.view()
-    def getNodeList(self):
-        return self.nodeListPtr
     def showBlockDiagramDes(self):
+        '''
+        ### Function Description
+        Go through each node object and print out the children and parent relationship
+        ### Return Value
+         * text of description
+        '''
         desList = list()
-        for node in self.getNodeList():
+        for node in self.nodeListPtr:
             nodeInfo = 'Node ID' + str(node.id) + ', Value ' + str(node.value)
-            #print(nodeInfo)
             desList.append(nodeInfo)
             desList.append('    Children:')
-            #print('    Children:')
             for i, child in enumerate(node.children):
                 nodeInfo = '      ' + str(i) + '.' + ' Child Node ID' + str(child.id) + ', Value ' + str(child.value)
-                #print(nodeInfo)
                 desList.append(nodeInfo)
             desList.append('    Parents:')
-            #print('    Parents:')
             for i, parent in enumerate(node.parents):
                 nodeInfo = '      ' + str(i) + '.' + ' Parent Node ID' + str(parent.id) + ', Value ' + str(parent.value)
-                #print(nodeInfo)
                 desList.append(nodeInfo)
         return '\n'.join(desList)
