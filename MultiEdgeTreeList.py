@@ -1,5 +1,5 @@
 from queue import Queue
-from graphviz import Graph
+from graphviz import Graph, Source
 class Node():
     def __init__(self, value, id):
         self.id = id
@@ -51,6 +51,8 @@ class Node():
         self.isRootNode = False
     def getID(self):
         return self.id
+    def getValue(self):
+        return self.value
     def getChildrenList(self):
         return self.children
     def getParentsList(self):
@@ -77,6 +79,8 @@ class BlockDiagram():
         self.graph = None
         self.nodeIDCount = 0
         self.nodeListPtr = list()
+        self.edgeList = list()
+        self.graphvizSource = ''
     def add2NodeListPtr(self, nodePtr):
         self.nodeListPtr.append(nodePtr)
     def newBlock(self, value):
@@ -101,11 +105,38 @@ class BlockDiagram():
         if dir == 'new2curr':
             ID1 = str(self.newNodePtr.getID())
             ID2 = str(self.currNodePtr.getID())
-        else:
+            edge = ID1 + ' -- ' + ID2
+            if edge in self.edgeList:
+                print('Edge connection is existed')
+            else:
+                self.edgeList.append(edge)
+                print('Graphviz edge is created between Node ID %s and ID %s' %(ID1, ID2))
+        elif dir == 'curr2new':
             ID1 = str(self.currNodePtr.getID())
             ID2 = str(self.newNodePtr.getID())
-        self.graph.edge(ID1, ID2)
-        print('Graphviz edge is created between Node ID %s and ID %s' %(ID1, ID2))
+            edge = ID1 + ' -- ' + ID2
+            if edge in self.edgeList:
+                print('Edge connection is existed')
+            else:
+                self.edgeList.append(edge)
+                print('Graphviz edge is created between Node ID %s and ID %s' %(ID1, ID2))
+        elif dir == 'insert':
+            parents = self.newNodePtr.getParentsList()
+            childrenID = str(self.currNodePtr.getID())
+            insertID = str(self.newNodePtr.getID())
+            for parent in parents:
+                parentID = str(parent.getID())
+                oriEdgeSyntax = parentID + ' -- ' + childrenID
+                newEdgeSyntax = parentID + ' -- ' + insertID
+                print(self.edgeList)
+                print(oriEdgeSyntax)
+                if oriEdgeSyntax in self.edgeList:
+                    self.edgeList.remove(oriEdgeSyntax)
+                self.edgeList.append(newEdgeSyntax)
+                print('Graphviz edge is created between Node ID %s and ID %s' %(parentID, insertID))
+            newEdgeSyntax = insertID + ' -- ' + childrenID
+            self.edgeList.append(newEdgeSyntax)
+            print('Graphviz edge is created between Node ID %s and ID %s' %(insertID, childrenID))
     def addNewChildNode(self, value):
         self.currNodePtr.addNewChild(value, self.nodeIDCount)
         self.newNodePtr = self.currNodePtr.getChildrenList()[-1] # get the new children and assign to newNodePtr
@@ -118,18 +149,34 @@ class BlockDiagram():
         self.currNodePtr.addNewParent(value, self.nodeIDCount)
         self.newNodePtr = self.currNodePtr.getParentsList()[-1] # get the new children and assign to tempNodePtr
         self.add2NodeListPtr(self.newNodePtr)
-        print('add new parent node ID %d to node ID %d' %(self.nodeID, currNodePtr.getID()))
+        print('add new parent node ID %d to node ID %d' %(self.newNodePtr.getID(), self.currNodePtr.getID()))
         self.addGraphvizNode()
         self.addGraphvizEdge(dir = 'new2curr')
+        self.nodeIDCount += 1
+    def insertNewNode(self, value):
+        self.currNodePtr.insertNode(value, self.nodeIDCount)
+        self.newNodePtr = self.currNodePtr.getParentsList()[-1]
+        self.add2NodeListPtr(self.newNodePtr)
+        for parent in self.newNodePtr.getParentsList():
+            parentID = parent.getID()
+            print('Insert new node ID %d between node ID %d and parent ID %d' %(self.newNodePtr.getID(), self.currNodePtr.getID(), parentID))
+        self.addGraphvizNode()
+        self.addGraphvizEdge(dir = 'insert')
         self.nodeIDCount += 1
     def addExistedParentNode(self, NewParentPtr):
         self.currNodePtr.addExitedParent(NewParentPtr)
         self.newNodePtr = self.currNodePtr.getParentsList()[-1]
         self.addGraphvizEdge(dir = 'new2curr')
+    def addExistedParentNodeByID(self, id):
+        NewParentPtr = self.getNodeFromID(id)
+        self.addExistedParentNode(NewParentPtr)
     def addExistedChildNode(self, NewChildPtr):
         self.currNodePtr.addExitedChild(NewChildPtr)
         self.newNodePtr = self.currNodePtr.getChildrenList()[-1]
         self.addGraphvizEdge(dir = 'curr2new')
+    def addExistedChildNodeByID(self, id):
+        NewChildPtr = self.getNodeFromID(id)
+        self.addExistedChildNode(NewChildPtr)
     def go2Child(self, childPos):
         if childPos < len(self.currNodePtr.children):
             print('move to children No.%d' %childPos)
@@ -161,3 +208,33 @@ class BlockDiagram():
         return self.currNodePtr.getChildrenList()
     def getCurrParentsList(self):
         return self.currNodePtr.getParentsList()
+    def showBlockDiagram(self, method = 'pdf'):
+        #self.graph.edges(self.edgeList)
+        self.graphvizSource = self.graph.source
+        edges = '\t' +'\n\t'.join(self.edgeList) + '\n}'
+        print(edges)
+        self.graphvizSource = self.graphvizSource.replace('}', edges)
+        print(self.graphvizSource)
+        renderGraph = Source(self.graphvizSource, filename='BlockDiagram.gv', engine='dot')
+        renderGraph.view()
+    def getNodeList(self):
+        return self.nodeListPtr
+    def showBlockDiagramDes(self):
+        desList = list()
+        for node in self.getNodeList():
+            nodeInfo = 'Node ID' + str(node.getID()) + ', Value ' + str(node.getValue())
+            #print(nodeInfo)
+            desList.append(nodeInfo)
+            desList.append('    Children:')
+            #print('    Children:')
+            for i, child in enumerate(node.getChildrenList()):
+                nodeInfo = '      ' + str(i) + '.' + ' Child Node ID' + str(child.getID()) + ', Value ' + str(child.getValue())
+                #print(nodeInfo)
+                desList.append(nodeInfo)
+            desList.append('    Parents:')
+            #print('    Parents:')
+            for i, parent in enumerate(node.getParentsList()):
+                nodeInfo = '      ' + str(i) + '.' + ' Parent Node ID' + str(parent.getID()) + ', Value ' + str(parent.getValue())
+                #print(nodeInfo)
+                desList.append(nodeInfo)
+        return '\n'.join(desList)

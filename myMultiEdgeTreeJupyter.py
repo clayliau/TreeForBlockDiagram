@@ -3,30 +3,31 @@ from MultiEdgeTreeList import *
 import os
 os.environ["PATH"] += os.pathsep + 'C:\\Program Files (x86)\\Graphviz2.38\\bin'
 myTree = BlockDiagram()
-myTree.newBlock(1)
-myTree.addNewChildNode(2)
-myTree.addNewChildNode(3)
+myTree.newBlock('SDR865-LBTX')
+myTree.addNewChildNode('LB-LPAMID')
 myTree.go2Child(0)
-myTree.addNewChildNode(4)
-myTree.addNewChildNode(5)
-myTree.go2Parent(0)
-myTree.go2Child(1)
-myTree.addNewChildNode(6)
-myTree.addNewChildNode(7)
-myTree.addNewChildNode(8)
+myTree.addNewChildNode('LPF')
+myTree.go2Child(0)
+myTree.addNewChildNode('2P2T')
+myTree.go2Child(0)
+myTree.addNewChildNode('ANT0')
+myTree.addNewChildNode('ANT1')
+myTree.go2NodeID(4)
+myTree.insertNewNode('TPX')
+myTree.showBlockDiagram()
 
 #%%
-
-
-
-
 #%%
-targetParentPtr = myTree.rootNode.getChildrenList()[0]
-myTree.addExistedParentNode(targetParentPtr)
-#%%
-myTree.graph
-
-#%%
-myTree.graph.view()
+for node in myTree.getNodeList():
+    nodeInfo = 'Node ID' + str(node.getID()) + ', Value ' + str(node.value)
+    print(nodeInfo)
+    print('    Children:')
+    for i, child in enumerate(node.getChildrenList()):
+         nodeInfo = '     - No' + str(i) + ' Child Node ID' + str(child.getID()) + ', Value ' + str(child.value)
+         print(nodeInfo)
+    print('    Parents:')
+    for i, parent in enumerate(node.getParentsList()):
+         nodeInfo = '     - No' + str(i) + ' Parent Node ID' + str(parent.getID()) + ', Value ' + str(parent.value)
+         print(nodeInfo)
 
 #%%
