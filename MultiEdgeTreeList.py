@@ -205,9 +205,9 @@ class BlockDiagram():
             self.currNodePtr = self.rootNode
             self.newNodePtr = self.rootNode
             self.add2NodeListPtr(self.rootNode)
+            print('*Block Diagram is created. The root node ID is %d' %self.currNodePtr.id)
             self.graph = Graph(name='BlockDiagram', filename='BlockDiagram.gv', engine='dot')
             self.addGraphvizNode()
-            print('Graph is created. The root node ID is %d' %self.currNodePtr.id)
     def addGraphvizNode(self):
         '''
         ### Function Description
@@ -216,7 +216,7 @@ class BlockDiagram():
         ID = str(self.newNodePtr.id)
         Value = str(self.newNodePtr.value)
         self.graph.node(name = ID, label = Value)
-        print('Graphviz Node is created with Node ID %s and Value %s' %(ID, Value))
+        print('-- Graphviz Node is created with Node ID %s and Value %s' %(ID, Value))
     def addGraphvizEdge(self, dir = 'new2curr'):
         '''
         ### Function Description
@@ -239,17 +239,17 @@ class BlockDiagram():
                 print('Edge connection is Exist')
             else:
                 self.edgeList.append(edge)
-                print('Graphviz edge is created between Node ID %s and ID %s' %(ID1, ID2))
+                print('-- Graphviz edge is created between Node ID %s and ID %s' %(ID1, ID2))
         elif dir == 'curr2new':
             # Create connection from currNodePtr --> newNodePtr
             ID1 = str(self.currNodePtr.id)
             ID2 = str(self.newNodePtr.id)
             edge = ID1 + ' -- ' + ID2
             if edge in self.edgeList:
-                print('Edge connection is Exist')
+                print('-- Graphviz Edge connection is Exist')
             else:
                 self.edgeList.append(edge)
-                print('Graphviz edge is created between Node ID %s and ID %s' %(ID1, ID2))
+                print('-- Graphviz edge is created between Node ID %s and ID %s' %(ID1, ID2))
         elif dir == 'insert':
             # Special case for insert node. It would delete ogriginal parents connection then reconnect to insert node
             parents = self.newNodePtr.parents
@@ -263,11 +263,12 @@ class BlockDiagram():
                 print(oriEdgeSyntax)
                 if oriEdgeSyntax in self.edgeList:
                     self.edgeList.remove(oriEdgeSyntax)
+                    print('-- Graphviz edge is removed between Node ID %s and ID %s' %(parentID, childrenID))
                 self.edgeList.append(newEdgeSyntax)
-                print('Graphviz edge is created between Node ID %s and ID %s' %(parentID, insertID))
+                print('-- Graphviz edge is created between Node ID %s and ID %s' %(parentID, insertID))
             newEdgeSyntax = insertID + ' -- ' + childrenID
             self.edgeList.append(newEdgeSyntax)
-            print('Graphviz edge is created between Node ID %s and ID %s' %(insertID, childrenID))
+            print('-- Graphviz edge is created between Node ID %s and ID %s' %(insertID, childrenID))
     def addNewChildNode(self, value, dataObj=None):
         '''
         ### Function Description
@@ -283,7 +284,7 @@ class BlockDiagram():
         self.currNodePtr.addNewChild(value, self.nodeIDCount, dataObj)
         self.newNodePtr = self.currNodePtr.children[-1] # get the new children and assign to newNodePtr
         self.add2NodeListPtr(self.newNodePtr)
-        print('add new child node ID %d to node ID %d' %(self.nodeIDCount, self.currNodePtr.id))
+        print('*Add new child node ID %d to node ID %d' %(self.nodeIDCount, self.currNodePtr.id))
         self.addGraphvizNode()
         self.addGraphvizEdge(dir = 'curr2new')
         self.nodeIDCount += 1
@@ -302,7 +303,7 @@ class BlockDiagram():
         self.currNodePtr.addNewParent(value, self.nodeIDCount, dataObj)
         self.newNodePtr = self.currNodePtr.parents[-1] # get the new children and assign to tempNodePtr
         self.add2NodeListPtr(self.newNodePtr)
-        print('add new parent node ID %d to node ID %d' %(self.newNodePtr.id, self.currNodePtr.id))
+        print('*Add new parent node ID %d to node ID %d' %(self.newNodePtr.id, self.currNodePtr.id))
         self.addGraphvizNode()
         self.addGraphvizEdge(dir = 'new2curr')
         self.nodeIDCount += 1
@@ -384,10 +385,10 @@ class BlockDiagram():
           * description: The index number of children list which is represesntd the target child node.
         '''
         if childPos < len(self.currNodePtr.children):
-            print('move to children No.%d' %childPos)
+            print('Move to Node ID %d\'s children No.%d' %(self.currNodePtr.id, childPos))
             oriID = self.currNodePtr.id
             self.currNodePtr = self.currNodePtr.children[childPos]
-            print('from node ID %d move to Node ID %d ' %(oriID, self.currNodePtr.id))
+            print('-> From node ID %d move to Node ID %d ' %(oriID, self.currNodePtr.id))
         else:
             print('No No.%d child node!' %childPos)
     def go2Parent(self, parentPos):
@@ -400,10 +401,10 @@ class BlockDiagram():
           * description: The index number of parents list which is represesntd the target parent node.
         '''
         if parentPos < len(self.currNodePtr.parents):
-            print('move to parent No.%d' %parentPos)
+            print('Move to move to Node ID %d\'s parent No.%d' %(self.currNodePtr.id, parentPos))
             oriID = self.currNodePtr.id
             self.currNodePtr = self.currNodePtr.parents[parentPos]
-            print('from node ID %d move to Node ID %d ' %(oriID, self.currNodePtr.id))
+            print('-> From node ID %d move to Node ID %d ' %(oriID, self.currNodePtr.id))
         else:
             print('No No.%d child node!' %parentPos)
     def go2NodeID(self, id):
